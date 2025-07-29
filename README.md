@@ -1,69 +1,115 @@
-# React + TypeScript + Vite
+# 🏃‍♂️ Fake My Run
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Generate realistic GPX files for Strava**
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🗺️ **Interactive Map Interface** - Click to create custom running routes on Mapbox
+- 🛣️ **Road Alignment** - Automatically snap your route to real roads and paths
+- ⚡ **Variable Pace Control** - Set target pace with realistic variability (0-50%)
+- 📈 **Real-time Elevation** - Live elevation profiles with terrain data
+- 📊 **Profile Charts** - Visual pace and elevation charts
+- 📱 **Responsive Design** - Works on desktop and mobile devices
+- 💾 **GPX Export** - Download Strava-compatible GPX files with realistic timing
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js 18+
+- npm or bun
+- Mapbox API token
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. **Clone the repository**
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+   ```bash
+   git clone https://github.com/yourusername/fake-my-run.git
+   cd fake-my-run
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. **Install dependencies**
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+   ```bash
+   bun install
+   ```
+
+3. **Set up Mapbox token**
+
+   - Get your free API token from [Mapbox](https://account.mapbox.com/)
+   - Replace the `ACCESS_TOKEN` in `src/App.tsx`
+
+4. **Start development server**
+   ```bash
+   bun run dev
+   ```
+
+## 🎯 How to Use
+
+1. **Create Your Route**
+
+   - Use the search box to find specific locations
+   - Click on the map to add waypoints
+   - Click "Align Path to Road" for realistic routing
+
+2. **Customize Your Run**
+
+   - Adjust target pace (3-10 min/km)
+   - Set pace variability (0-50%) for realism
+   - View real-time distance, duration, and elevation
+
+3. **Download GPX**
+   - Set run name, date, and time
+   - Add optional description
+   - Download your GPX file for Strava/Garmin
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **Mapping**: Mapbox GL JS + Search API
+- **Charts**: Recharts
+- **UI Components**: Shadcn + Custom
+- **GPX Generation**: [gpx-builder](https://www.npmjs.com/package/gpx-builder)
+
+## 🎨 Key Components
+
+### Map Features
+
+- Interactive point-and-click route creation
+- Real-time road snapping via Mapbox Directions API
+- Live elevation data from Mapbox Terrain
+
+### Pace Simulation
+
+- Deterministic variability algorithm
+- Realistic timing based on distance segments
+- Export with GPS timestamps for authenticity
+
+### Data Export
+
+- Standard GPX format
+- Compatible with Strava, Garmin Connect, and other platforms
+- Includes elevation, timing, and metadata
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details.
+
+## ⚠️ Disclaimer
+
+This tool is for educational and testing purposes. Please use responsibly and in accordance with the terms of service of fitness tracking platforms.
+
+## 🙏 Acknowledgments
+
+- [Mapbox](https://mapbox.com) for mapping services
+- [gpx-builder](https://github.com/gpx-builder/gpx-builder) for GPX generation
+- [Recharts](https://recharts.org) for data visualization

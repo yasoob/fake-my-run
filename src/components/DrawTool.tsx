@@ -1,7 +1,7 @@
 import React from "react";
-import ManualIcon from "./assets/manual.svg?react";
-import CircleIcon from "./assets/circle.svg?react";
-import HeartIcon from "./assets/heart.svg?react";
+import ManualIcon from "../assets/manual.svg?react";
+import CircleIcon from "../assets/circle.svg?react";
+import HeartIcon from "../assets/heart.svg?react";
 
 export type DrawMode = "manual" | "circle" | "heart";
 

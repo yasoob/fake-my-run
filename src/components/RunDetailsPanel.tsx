@@ -9,11 +9,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import distanceIcon from "./assets/distance.svg";
-import durationIcon from "./assets/duration.svg";
-import elevationIcon from "./assets/elevation.svg";
-import paceIcon from "./assets/pace.svg";
-import TermsDialog from "./components/TermsDialog";
+import distanceIcon from "../assets/distance.svg";
+import durationIcon from "../assets/duration.svg";
+import elevationIcon from "../assets/elevation.svg";
+import paceIcon from "../assets/pace.svg";
+import TermsDialog from "./TermsDialog";
 
 interface RunDetailsPanelProps {
   pace: number;

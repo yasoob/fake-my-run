@@ -1,114 +1,34 @@
-import { useRef, useEffect, useReducer, useCallback, useMemo } from "react";
+import {
+  useRef,
+  useEffect,
+  useReducer,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import mapboxgl from "mapbox-gl";
 import { SearchBox } from "@mapbox/search-js-react";
-import RunDetailsPanel from "./RunDetailsPanel";
-import DrawTool, { type DrawMode } from "./DrawTool";
+import RunDetailsPanel from "./components/RunDetailsPanel";
+import DrawTool, { type DrawMode } from "./components/DrawTool";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./App.css";
-import ProfileCharts from "./ProfileCharts";
+import ProfileCharts from "./components/ProfileCharts";
 import { buildGPX, StravaBuilder } from "gpx-builder";
+import keyIcon from "./assets/key.svg";
+import TokenDialog from "./components/TokenDialog";
+import MapErrorBoundary from "./components/MapErrorBoundary";
+import {
+  haversineDistance,
+  calculateVariablePace,
+  generateCircleCoordinates,
+  generateHeartCoordinates,
+} from "./lib/utils";
+
 const { Point, Metadata, Track, Segment } = StravaBuilder.MODELS;
 
 const INITIAL_CENTER: [number, number] = [-74.0242, 40.6941];
 const INITIAL_ZOOM = 13;
-const ACCESS_TOKEN =
-  "pk.eyJ1IjoieWFzb29iIiwiYSI6ImNqdXVlbHRwcjBoenE0ZXAxYTF6azR3emcifQ.yGqW286LUR4dX9Y-pVeLFQ";
-
-function haversineDistance(
-  coord1: [number, number],
-  coord2: [number, number]
-): number {
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const [lon1, lat1] = coord1;
-  const [lon2, lat2] = coord2;
-  const R = 6371e3;
-  const φ1 = toRad(lat1),
-    φ2 = toRad(lat2);
-  const Δφ = toRad(lat2 - lat1),
-    Δλ = toRad(lon2 - lon1);
-
-  const a =
-    Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
-
-function calculateVariablePace(
-  coords: [number, number][],
-  targetPace: number,
-  variabilityPercent: number
-): number[] {
-  if (coords.length === 0) return [];
-
-  const variablePaces = coords.map((_, i) => {
-    // Create deterministic but varied pace based on position
-    const seed = i * 0.1;
-    const noise = Math.sin(seed) * Math.cos(seed * 1.7) * Math.sin(seed * 2.3);
-    const variability = (variabilityPercent / 100) * targetPace;
-    return targetPace + noise * variability;
-  });
-
-  return variablePaces;
-}
-
-function generateCircleCoordinates(
-  center: [number, number],
-  zoom: number,
-  baseRadiusKm: number = 1
-): [number, number][] {
-  const points = 20; // Reduced to meet Mapbox API limitation
-  const coordinates: [number, number][] = [];
-
-  // Adjust radius based on zoom level - higher zoom = smaller radius
-  // Zoom 10 = base radius, each zoom level halves/doubles the radius
-  const zoomFactor = Math.pow(2, 13 - zoom);
-  const radiusKm = baseRadiusKm * zoomFactor;
-
-  // Convert radius from km to degrees (approximate)
-  const radiusLng = radiusKm / (111.32 * Math.cos((center[1] * Math.PI) / 180));
-  const radiusLat = radiusKm / 110.54;
-
-  for (let i = 0; i <= points; i++) {
-    const angle = (i / points) * 2 * Math.PI;
-    const lng = center[0] + radiusLng * Math.cos(angle);
-    const lat = center[1] + radiusLat * Math.sin(angle);
-    coordinates.push([lng, lat]);
-  }
-
-  return coordinates;
-}
-
-function generateHeartCoordinates(
-  center: [number, number],
-  zoom: number,
-  baseSize: number = 0.01
-): [number, number][] {
-  const coordinates: [number, number][] = [];
-  const points = 20; // Reduced to meet Mapbox API limitation
-
-  // Adjust size based on zoom level - higher zoom = smaller size
-  // Zoom 10 = base size, each zoom level halves/doubles the size
-  const zoomFactor = Math.pow(2, 13 - zoom);
-  const size = baseSize * zoomFactor;
-
-  for (let i = 0; i <= points; i++) {
-    const t = (i / points) * 2 * Math.PI;
-
-    // Heart equation: x = 16sin³(t), y = 13cos(t) - 5cos(2t) - 2cos(3t) - cos(4t)
-    const x = 16 * Math.pow(Math.sin(t), 3);
-    const y =
-      13 * Math.cos(t) -
-      5 * Math.cos(2 * t) -
-      2 * Math.cos(3 * t) -
-      Math.cos(4 * t);
-
-    // Scale and translate to the center
-    const lng = center[0] + (x * size) / 16;
-    const lat = center[1] + (y * size) / 16;
-    coordinates.push([lng, lat]);
-  }
-
-  return coordinates;
-}
+const DEFAULT_ACCESS_TOKEN = "";
 
 // Centralized state interface
 interface AppState {
@@ -150,7 +70,7 @@ const initialState: AppState = {
   markers: [],
   isLoadingRoute: false,
   pace: 5.5,
-  paceVariability: 15,
+  paceVariability: 0,
   elevations: [],
   drawMode: "manual" as DrawMode,
   showMarkers: true,
@@ -200,6 +120,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
 function App() {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState(() => {
+    // Try to load from localStorage
+    return localStorage.getItem("mapboxAccessToken") || DEFAULT_ACCESS_TOKEN;
+  });
 
   const [state, dispatch] = useReducer(appReducer, initialState);
 
@@ -387,17 +313,100 @@ function App() {
     dispatch({ type: "SET_ELEVATIONS", payload: clean });
   }
 
+  const initializeMap = useCallback(async () => {
+    console.log("Initializing map with access token:", accessToken);
+    if (!mapContainerRef.current) return;
+
+    try {
+      setMapError(null);
+      mapboxgl.accessToken = accessToken;
+
+      const map = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
+      });
+
+      mapRef.current = map;
+
+      // Add error handling for map events
+      map.on("error", (e) => {
+        console.error("Mapbox error:", e);
+        if (e.error?.message?.includes("Unauthorized")) {
+          setMapError(
+            "Invalid access token. Please update your Mapbox access token."
+          );
+          setShowTokenDialog(true);
+        } else {
+          setMapError(
+            "Failed to load map resources. Please check your internet connection."
+          );
+        }
+      });
+
+      map.on("load", () => {
+        try {
+          map.addSource("mapbox-dem", {
+            type: "raster-dem",
+            url: "mapbox://mapbox.terrain-rgb",
+            tileSize: 512,
+            maxzoom: 14,
+          });
+          map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
+        } catch (error) {
+          console.error("Failed to add terrain:", error);
+          // Non-critical error, continue without terrain
+        }
+      });
+
+      // Add geolocate control to the map.
+      try {
+        map.addControl(
+          new mapboxgl.GeolocateControl({
+            positionOptions: {
+              enableHighAccuracy: false,
+            },
+            trackUserLocation: false,
+            showUserHeading: false,
+            showAccuracyCircle: false,
+            showUserLocation: false,
+          })
+        );
+      } catch (error) {
+        console.error("Failed to add geolocate control:", error);
+        // Non-critical error, continue without control
+      }
+    } catch (error) {
+      console.error("Failed to initialize map:", error);
+      setMapError(
+        "Failed to initialize the map. Please check your access token."
+      );
+      setShowTokenDialog(true);
+    }
+  }, [accessToken]); // Add accessToken to dependency array
+
   const alignPathToRoad = useCallback(
     async (coords?: [number, number][]) => {
       const targetCoords = coords || state.coordinates;
       if (!Array.isArray(targetCoords) || targetCoords.length < 2) return;
 
       const coordsStr = targetCoords.map((c) => `${c[0]},${c[1]}`).join(";");
-      const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsStr}?geometries=geojson&access_token=${ACCESS_TOKEN}`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsStr}?geometries=geojson&access_token=${accessToken}`;
 
       dispatch({ type: "SET_LOADING_ROUTE", payload: true });
       try {
         const res = await fetch(url);
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            setMapError("Invalid access token for routing API.");
+            setShowTokenDialog(true);
+            return;
+          }
+          throw new Error(`Routing API error: ${res.status}`);
+        }
+
         const data = await res.json();
 
         if (!data.routes || !data.routes[0] || !data.routes[0].geometry) {
@@ -439,11 +448,12 @@ function App() {
         });
       } catch (err) {
         console.error("Failed to align path:", err);
+        setMapError("Failed to connect to routing service. Please try again.");
       } finally {
         dispatch({ type: "SET_LOADING_ROUTE", payload: false });
       }
     },
-    [state.coordinates, state.showMarkers]
+    [state.coordinates, state.showMarkers, accessToken]
   );
 
   const handleMapClick = useCallback(
@@ -493,42 +503,22 @@ function App() {
     ]
   );
 
+  const handleSaveToken = (newToken: string) => {
+    setAccessToken(newToken);
+    localStorage.setItem("mapboxAccessToken", newToken);
+    // Remove the immediate reinitialization here
+  };
+
   // Initialize map only once
   useEffect(() => {
-    mapboxgl.accessToken = ACCESS_TOKEN;
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current!,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: INITIAL_CENTER,
-      zoom: INITIAL_ZOOM,
-    });
-    mapRef.current = map;
+    initializeMap();
 
-    map.on("load", () => {
-      map.addSource("mapbox-dem", {
-        type: "raster-dem",
-        url: "mapbox://mapbox.terrain-rgb",
-        tileSize: 512,
-        maxzoom: 14,
-      });
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
-    });
-
-    // Add geolocate control to the map.
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: false,
-        },
-        trackUserLocation: false,
-        showUserHeading: false,
-        showAccuracyCircle: false,
-        showUserLocation: false,
-      })
-    );
-
-    return () => map.remove();
-  }, []);
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+      }
+    };
+  }, [initializeMap]); // Update dependency to use initializeMap
 
   // Update click handler when needed
   useEffect(() => {
@@ -586,7 +576,26 @@ function App() {
     <>
       <div className="w-full flex items-center justify-items-center p-4 bg-red-500 text-white shadow-md">
         <h1 className="text-3xl font-bold mx-auto">Fake My Run</h1>
+        <button
+          onClick={() => setShowTokenDialog(true)}
+          className="absolute right-4 p-2 hover:bg-red-600 rounded-full transition-colors hover:cursor-pointer"
+          title="Set Mapbox Access Token"
+        >
+          <img
+            src={keyIcon}
+            alt="Set Access Token"
+            className="w-6 h-6 filter brightness-0 invert"
+          />
+        </button>
       </div>
+
+      <TokenDialog
+        isOpen={showTokenDialog}
+        currentToken={accessToken}
+        onClose={() => setShowTokenDialog(false)}
+        onSave={handleSaveToken}
+      />
+
       <div className="grid grid-cols-12 min-h-screen">
         <div className="col-span-12 md:col-span-8 relative">
           <div className="h-[400px] md:h-[800px] w-full relative">
@@ -597,7 +606,7 @@ function App() {
                   options={{ proximity: { lng: -122.43, lat: 37.77 } }}
                   onRetrieve={handleRetrieve}
                   placeholder="Search location"
-                  accessToken={ACCESS_TOKEN}
+                  accessToken={accessToken}
                 />
               </div>
               <button
@@ -608,7 +617,27 @@ function App() {
               </button>
             </div>
 
-            <div id="map-container" className="w-full" ref={mapContainerRef} />
+            <MapErrorBoundary onTokenError={() => setShowTokenDialog(true)}>
+              <div
+                id="map-container"
+                className="w-full h-full"
+                ref={mapContainerRef}
+              >
+                {mapError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-20">
+                    <div className="text-center p-4 text-base">
+                      <p className="text-red-600 mb-4">{mapError}</p>
+                      <button
+                        onClick={() => setShowTokenDialog(true)}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 hover:cursor-pointer"
+                      >
+                        Update Access Token
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </MapErrorBoundary>
 
             {state.coordinates.length >= 2 && (
               <button

@@ -15,6 +15,7 @@ import "./App.css";
 import ProfileCharts from "./components/ProfileCharts";
 import { buildGPX, StravaBuilder } from "gpx-builder";
 import keyIcon from "./assets/key.svg";
+import githubIcon from "./assets/github.svg";
 import TokenDialog from "./components/TokenDialog";
 import MapErrorBoundary from "./components/MapErrorBoundary";
 import {
@@ -577,17 +578,31 @@ function App() {
     <>
       <div className="w-full flex items-center justify-items-center p-4 bg-red-500 text-white shadow-md">
         <h1 className="text-3xl font-bold mx-auto">Fake My Run</h1>
-        <button
-          onClick={() => setShowTokenDialog(true)}
-          className="absolute right-4 p-2 hover:bg-red-600 rounded-full transition-colors hover:cursor-pointer"
-          title="Set Mapbox Access Token"
-        >
-          <img
-            src={keyIcon}
-            alt="Set Access Token"
-            className="w-6 h-6 filter brightness-0 invert"
-          />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowTokenDialog(true)}
+            className="p-2 hover:bg-red-600 rounded-full transition-colors hover:cursor-pointer"
+            title="Set Mapbox Access Token"
+          >
+            <img
+              src={keyIcon}
+              alt="Set Access Token"
+              className="w-6 h-6 filter brightness-0 invert"
+            />
+          </button>
+          <a
+            href="https://github.com/yasoob/fake-my-run"
+            target="_blank"
+            className="p-2 hover:bg-red-600 rounded-full transition-colors hover:cursor-pointer"
+            title="View on GitHub"
+          >
+            <img
+              src={githubIcon}
+              alt="View on GitHub"
+              className="w-6 h-6 filter brightness-0 invert"
+            />
+          </a>
+        </div>
       </div>
 
       <TokenDialog

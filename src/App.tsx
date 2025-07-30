@@ -18,6 +18,7 @@ import keyIcon from "./assets/key.svg";
 import githubIcon from "./assets/github.svg";
 import TokenDialog from "./components/TokenDialog";
 import MapErrorBoundary from "./components/MapErrorBoundary";
+import TooManyPointsDialog from "./components/TooManyPointsDialog";
 import {
   haversineDistance,
   calculateVariablePace,
@@ -123,6 +124,7 @@ function App() {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [showTooManyPointsDialog, setShowTooManyPointsDialog] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState(() => {
     // Try to load from localStorage
@@ -393,6 +395,12 @@ function App() {
       const targetCoords = coords || state.coordinates;
       if (!Array.isArray(targetCoords) || targetCoords.length < 2) return;
 
+      // Check if there are more than 25 points
+      if (targetCoords.length > 25) {
+        setShowTooManyPointsDialog(true);
+        return;
+      }
+
       const coordsStr = targetCoords.map((c) => `${c[0]},${c[1]}`).join(";");
       const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsStr}?geometries=geojson&access_token=${accessToken}`;
 
@@ -610,6 +618,11 @@ function App() {
         currentToken={accessToken}
         onClose={() => setShowTokenDialog(false)}
         onSave={handleSaveToken}
+      />
+
+      <TooManyPointsDialog
+        open={showTooManyPointsDialog}
+        onOpenChange={setShowTooManyPointsDialog}
       />
 
       <div className="grid grid-cols-12 min-h-screen">

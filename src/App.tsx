@@ -28,7 +28,8 @@ const { Point, Metadata, Track, Segment } = StravaBuilder.MODELS;
 
 const INITIAL_CENTER: [number, number] = [-74.0242, 40.6941];
 const INITIAL_ZOOM = 13;
-const DEFAULT_ACCESS_TOKEN = "";
+const DEFAULT_ACCESS_TOKEN =
+  "pk.eyJ1IjoieWFzb29iIiwiYSI6ImNtZHBtMGl3djBlZ2oyaW43ZDZ1MzE5M2YifQ.PLBwTXqAkzkX2EW5Kp67uw";
 
 // Centralized state interface
 interface AppState {

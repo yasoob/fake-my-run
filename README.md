@@ -17,7 +17,7 @@
 ### Prerequisites
 
 - Node.js 18+
-- npm or bun
+- bun
 - Mapbox API token
 
 ### Installation
@@ -38,7 +38,7 @@
 3. **Set up Mapbox token**
 
    - Get your free API token from [Mapbox](https://account.mapbox.com/)
-   - Replace the `ACCESS_TOKEN` in `src/App.tsx`
+   - Replace the `DEFAULT_ACCESS_TOKEN` in `src/App.tsx`
 
 4. **Start development server**
    ```bash
@@ -67,9 +67,9 @@
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
-- **Mapping**: Mapbox GL JS + Search API
+- **Mapping**: Mapbox GL JS
 - **Charts**: Recharts
-- **UI Components**: Shadcn + Custom
+- **UI Components**: Shadcn
 - **GPX Generation**: [gpx-builder](https://www.npmjs.com/package/gpx-builder)
 
 ## 🎨 Key Components
@@ -89,7 +89,7 @@
 ### Data Export
 
 - Standard GPX format
-- Compatible with Strava, Garmin Connect, and other platforms
+- Compatible with Strava
 - Includes elevation, timing, and metadata
 
 ## 🤝 Contributing

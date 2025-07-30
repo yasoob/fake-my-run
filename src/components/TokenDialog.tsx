@@ -43,7 +43,16 @@ function TokenDialog({
         <DialogHeader>
           <DialogTitle>Set Mapbox Access Token</DialogTitle>
           <DialogDescription>
-            Enter your Mapbox access token. This will be saved locally.
+            Enter your Mapbox access token. This will be saved locally and will
+            not be shared with us. You can get a free token from{" "}
+            <a
+              className="text-red-500 underline"
+              href="https://www.mapbox.com/signup/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mapbox
+            </a>
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

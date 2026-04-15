@@ -14,6 +14,7 @@ import durationIcon from "../assets/duration.svg";
 import elevationIcon from "../assets/elevation.svg";
 import paceIcon from "../assets/pace.svg";
 import TermsDialog from "./TermsDialog";
+import { trackEvent } from "../lib/gtag";
 
 interface RunDetailsPanelProps {
   pace: number;
@@ -49,6 +50,7 @@ const RunDetailsPanel: React.FC<RunDetailsPanelProps> = ({
   const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   const handleDownload = () => {
+    trackEvent("download_gpx", { run_name: runName });
     onDownload({
       name: runName,
       date,

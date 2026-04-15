@@ -25,6 +25,7 @@ import {
   generateCircleCoordinates,
   generateHeartCoordinates,
 } from "./lib/utils";
+import { trackEvent } from "./lib/gtag";
 
 const { Point, Metadata, Track, Segment } = StravaBuilder.MODELS;
 
@@ -401,6 +402,7 @@ function App() {
         return;
       }
 
+      trackEvent("align_path_to_road", { points: targetCoords.length });
       const coordsStr = targetCoords.map((c) => `${c[0]},${c[1]}`).join(";");
       const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsStr}?geometries=geojson&access_token=${accessToken}`;
 
@@ -568,6 +570,7 @@ function App() {
   }, [state.showMarkers, state.markers]);
 
   const clearMarkers = () => {
+    trackEvent("clear_markers");
     const map = mapRef.current;
     if (map) {
       if (map.getLayer("line")) {

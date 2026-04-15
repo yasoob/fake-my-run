@@ -2,6 +2,7 @@ import React from "react";
 import ManualIcon from "../assets/manual.svg?react";
 import CircleIcon from "../assets/circle.svg?react";
 import HeartIcon from "../assets/heart.svg?react";
+import { trackEvent } from "../lib/gtag";
 
 export type DrawMode = "manual" | "circle" | "heart";
 
@@ -33,7 +34,10 @@ const DrawTool: React.FC<DrawToolProps> = ({
           return (
             <button
               key={mode.id}
-              onClick={() => onModeChange(mode.id)}
+              onClick={() => {
+                trackEvent("select_draw_mode", { mode: mode.id });
+                onModeChange(mode.id);
+              }}
               className={`group flex flex-col items-center justify-center p-3 rounded border-2 transition-colors bg-white text-gray-700 hover:cursor-pointer ${
                 selectedMode === mode.id
                   ? "border-red-500"
@@ -78,7 +82,10 @@ const DrawTool: React.FC<DrawToolProps> = ({
             type="checkbox"
             className="sr-only peer"
             checked={showMarkers}
-            onChange={(e) => onShowMarkersChange(e.target.checked)}
+            onChange={(e) => {
+              trackEvent("toggle_markers", { visible: e.target.checked });
+              onShowMarkersChange(e.target.checked);
+            }}
           />
           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
         </label>

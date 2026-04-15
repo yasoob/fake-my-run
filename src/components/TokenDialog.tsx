@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { trackEvent } from "../lib/gtag";
 
 interface TokenDialogProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ function TokenDialog({
   }, [isOpen, currentToken]);
 
   const handleSave = () => {
+    trackEvent("save_access_token");
     onSave(tempToken);
     onClose();
   };

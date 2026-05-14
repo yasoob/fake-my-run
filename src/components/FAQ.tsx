@@ -28,11 +28,6 @@ const faqs = [
       "The tool snaps routes to real roads, uses actual terrain elevation data, and adds pace variability so the activity doesn't look artificially uniform. Timestamps are calculated based on your configured pace.",
   },
   {
-    question: "Can I upload directly to Strava without downloading a file?",
-    answer:
-      "Yes! If you connect your Strava account via an access token, you can upload the activity directly to Strava from the app — no manual file upload needed.",
-  },
-  {
     question: "What fitness apps are supported?",
     answer:
       "Any app that accepts GPX files — including Strava, Garmin Connect, Nike Run Club, Adidas Running, Komoot, and more.",
@@ -41,6 +36,11 @@ const faqs = [
     question: "Does the route snap to real roads?",
     answer:
       'Yes. The "Align Path to Road" feature automatically snaps your drawn route to actual streets and paths, making the result look like a real run.',
+  },
+  {
+    question: "Can I draw heart or circle shaped routes?",
+    answer:
+      "Yes! The app includes shape templates for circles and hearts. Just select a shape from the Draw Tool panel and it will generate the route automatically based on your current map view.",
   },
   {
     question: "Can I create routes anywhere in the world?",

@@ -118,3 +118,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+[data-state="open"] > [data-radix-accordion-content] {
+  animation: slideDown 200ms ease-out;
+}
+
+[data-state="closed"] > [data-radix-accordion-content] {
+  animation: slideUp 200ms ease-out;
+}

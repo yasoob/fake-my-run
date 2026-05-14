@@ -15,11 +15,15 @@
     <meta property="og:title" content="Fake My Run - Generate Fake GPX Running Routes" />
     <meta property="og:description" content="Draw custom running routes on a map and generate realistic GPX files with configurable pace, elevation, and variability. Export to Strava, Garmin, and more." />
     <meta property="og:site_name" content="Fake My Run" />
+    <meta property="og:image" content="https://fakemyrun.yasoob.me/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Fake My Run - Generate Fake GPX Running Routes" />
     <meta name="twitter:description" content="Draw custom running routes on a map and generate realistic GPX files. Export fake runs to Strava, Garmin, and other fitness apps." />
+    <meta name="twitter:image" content="https://fakemyrun.yasoob.me/og-image.jpg" />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -36,6 +40,128 @@
         "price": "0",
         "priceCurrency": "USD"
       }
+    }
+    </script>
+
+    <!-- FAQ Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Fake My Run?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Fake My Run is a free tool that lets you draw custom running routes on a map and generate realistic GPX files. You can configure pace, elevation gain, and variability to create authentic-looking activities for Strava, Garmin, and other fitness apps."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I create a fake run?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Search for a location, then either draw a route manually or use shape templates (circle, heart) to generate a route automatically. Adjust your pace, distance, and elevation settings, then download the GPX file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I upload a GPX file to Strava?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Log in to Strava, click the \"+\" icon in the top navigation, select \"Upload activity,\" then choose your downloaded .gpx file. Add a name and activity type, then save. Your fake run will appear in your feed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Fake My Run free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, completely free. No tokens, no subscriptions, no account required. Just draw your route and download the GPX file."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes the generated GPX files realistic?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The tool snaps routes to real roads, uses actual terrain elevation data, and adds pace variability so the activity doesn't look artificially uniform. Timestamps are calculated based on your configured pace."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I upload directly to Strava without downloading a file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! If you connect your Strava account via an access token, you can upload the activity directly to Strava from the app — no manual file upload needed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What fitness apps are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any app that accepts GPX files — including Strava, Garmin Connect, Nike Run Club, Adidas Running, Komoot, and more."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the route snap to real roads?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The \"Align Path to Road\" feature automatically snaps your drawn route to actual streets and paths, making the result look like a real run."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I create routes anywhere in the world?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Search for any city, neighborhood, or landmark and draw your route there. The tool works with global map data, so you can generate fake runs in any location worldwide."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a GPX file?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "GPX (GPS Exchange Format) is a standard file format for storing GPS data like routes, tracks, and waypoints. It's universally supported by fitness apps including Strava, Garmin Connect, and Nike Run Club for importing activities."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will my fake run look real on Strava?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The generated GPX includes realistic pace variations, accurate elevation data from real terrain, and proper timestamps. The route follows actual roads and paths, making it indistinguishable from a real recorded activity."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I customize the pace and distance?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Absolutely. Use the pace slider to set your target speed (in min/km), adjust pace variability to add natural fluctuations, and draw any route length you want. The tool calculates realistic split times automatically."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to create an account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Fake My Run works entirely in your browser with no sign-up, no login, and no personal data collected. Just open the app and start drawing your route."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I upload a GPX file to Garmin Connect?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Log in to Garmin Connect, go to Activities, click \"Import\" in the top right, then select your .gpx file. Garmin will process it and add it to your activity history with all the route and pace data."
+          }
+        }
+      ]
     }
     </script>
 

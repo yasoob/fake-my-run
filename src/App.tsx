@@ -13,6 +13,7 @@ import DrawTool, { type DrawMode } from "./components/DrawTool";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./App.css";
 import ProfileCharts from "./components/ProfileCharts";
+import { FAQ } from "./components/FAQ";
 import { buildGPX, StravaBuilder } from "gpx-builder";
 import keyIcon from "./assets/key.svg";
 import githubIcon from "./assets/github.svg";
@@ -690,7 +691,7 @@ function App() {
             elevations={state.elevations}
           />
         </div>
-        <div className="col-span-12 md:col-span-4 bg-white p-6 space-y-4 overflow-y-auto">
+        <div className="col-span-12 md:col-span-4 bg-white p-6 space-y-4 md:sticky md:top-0 md:self-start md:max-h-screen md:overflow-y-auto">
           <DrawTool
             selectedMode={state.drawMode}
             onModeChange={(mode) =>
@@ -717,6 +718,8 @@ function App() {
           />
         </div>
       </div>
+
+      <FAQ />
     </>
   );
 }

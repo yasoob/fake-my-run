@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import mapboxgl from "mapbox-gl";
-import { SearchBox } from "@mapbox/search-js-react";
+import { LocationSearch } from "./components/LocationSearch";
 import RunDetailsPanel from "./components/RunDetailsPanel";
 import DrawTool, { type DrawMode } from "./components/DrawTool";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -238,8 +238,7 @@ function App() {
     URL.revokeObjectURL(url);
   }
 
-  const handleRetrieve = (res: any) => {
-    const coords = res.features[0].geometry.coordinates;
+  const handleRetrieve = (coords: [number, number]) => {
     mapRef.current?.flyTo({
       center: coords,
       essential: true,
@@ -634,12 +633,9 @@ function App() {
           <div className="h-[400px] md:h-[800px] w-full relative">
             <div className="absolute top-2 left-2 z-10 w-[calc(100%-1rem-39px)] flex gap-2">
               <div className="flex-1">
-                {/* @ts-ignore */}
-                <SearchBox
-                  options={{ proximity: { lng: -122.43, lat: 37.77 } }}
-                  onRetrieve={handleRetrieve}
+                <LocationSearch
+                  onSelect={handleRetrieve}
                   placeholder="Search location"
-                  accessToken={accessToken}
                 />
               </div>
               <button

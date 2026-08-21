@@ -1,3 +1,5 @@
+
+
 # 🏃‍♂️ Fake My Run
 
 **Generate realistic GPX files for Strava**
@@ -25,7 +27,7 @@
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/fake-my-run.git
+   git clone https://github.com/yasoob/fake-my-run.git
    cd fake-my-run
    ```
 

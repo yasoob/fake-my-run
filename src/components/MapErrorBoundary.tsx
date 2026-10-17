@@ -13,13 +13,14 @@ const ErrorFallback = ({
   error,
   onTokenError,
 }: {
-  error: Error;
+  error: unknown;
   onTokenError?: () => void;
 }) => {
+  const errorMessage = error instanceof Error ? error.message : String(error || "");
   const isTokenError =
-    error?.message?.toLowerCase().includes("unauthorized") ||
-    error?.message?.toLowerCase().includes("401") ||
-    error?.message?.toLowerCase().includes("access token");
+    errorMessage.toLowerCase().includes("unauthorized") ||
+    errorMessage.toLowerCase().includes("401") ||
+    errorMessage.toLowerCase().includes("access token");
 
   return (
     <div className="h-full w-full flex items-center justify-center p-8">

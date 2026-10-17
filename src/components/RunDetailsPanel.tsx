@@ -22,7 +22,7 @@ interface RunDetailsPanelProps {
   paceVariability: number;
   setPaceVariability: (v: number) => void;
   distance: number;
-  duration: number;
+  duration: number; // in minutes
   elevation: number;
   onDownload: (runDetails: {
     name: string;
@@ -30,6 +30,22 @@ interface RunDetailsPanelProps {
     time: string;
     description: string;
   }) => void;
+}
+
+function formatDuration(durationMinutes: number): string {
+  if (!durationMinutes || durationMinutes <= 0) return "00:00";
+  const totalSeconds = Math.round(durationMinutes * 60);
+  const hours = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  return `${mins.toString().padStart(2, "0")}:${secs
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 const RunDetailsPanel: React.FC<RunDetailsPanelProps> = ({
@@ -49,10 +65,13 @@ const RunDetailsPanel: React.FC<RunDetailsPanelProps> = ({
   const [description, setDescription] = useState("");
   const [isTermsOpen, setIsTermsOpen] = useState(false);
 
+  const isRouteReady = distance > 0;
+
   const handleDownload = () => {
+    if (!isRouteReady) return;
     trackEvent("download_gpx", { run_name: runName });
     onDownload({
-      name: runName,
+      name: runName.trim() || "Morning Run",
       date,
       time,
       description,
@@ -61,147 +80,175 @@ const RunDetailsPanel: React.FC<RunDetailsPanelProps> = ({
 
   return (
     <>
-      <h2 className="text-xl font-bold">Run Details</h2>
-      <div className="bg-gray-100 p-4 rounded">
-        {/* <h3 className="text-md font-medium mb-2">Run Stats</h3> */}
+      <h2 className="text-xl font-bold text-gray-900">Run Details</h2>
+      <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl">
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-4">
-            <img src={distanceIcon} alt="Distance" className="w-9 h-9" />
+          <div className="flex items-center gap-3">
+            <img src={distanceIcon} alt="Distance" className="w-8 h-8 shrink-0" />
             <div>
-              Distance
-              <br />
-              <p className="font-bold text-lg">
+              <span className="text-xs text-gray-500 font-medium">Distance</span>
+              <p className="font-bold text-base text-gray-900">
                 {(distance / 1000).toFixed(2)} km
-              </p>{" "}
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <img src={durationIcon} alt="Duration" className="w-9 h-9" />
-            <div>
-              Duration
-              <br />
-              <p className="font-bold text-lg">
-                {Math.floor(duration / 60)}:
-                {Math.floor(duration % 60)
-                  .toString()
-                  .padStart(2, "0")}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <img src={elevationIcon} alt="Elevation" className="w-9 h-9" />
+          <div className="flex items-center gap-3">
+            <img src={durationIcon} alt="Duration" className="w-8 h-8 shrink-0" />
             <div>
-              Elevation Gain
-              <br />
-              <p className="font-bold text-lg">{Math.round(elevation)}m</p>
+              <span className="text-xs text-gray-500 font-medium">Duration</span>
+              <p className="font-bold text-base text-gray-900">
+                {formatDuration(duration)}
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <img src={paceIcon} alt="Pace" className="w-9 h-9" />
+          <div className="flex items-center gap-3">
+            <img src={elevationIcon} alt="Elevation" className="w-8 h-8 shrink-0" />
             <div>
-              Avg Pace
-              <br />
-              <p className="font-bold text-lg">{pace.toFixed(2)} min/km</p>
+              <span className="text-xs text-gray-500 font-medium">Elevation Gain</span>
+              <p className="font-bold text-base text-gray-900">
+                {Math.round(elevation)}m
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <img src={paceIcon} alt="Pace" className="w-8 h-8 shrink-0" />
+            <div>
+              <span className="text-xs text-gray-500 font-medium">Avg Pace</span>
+              <p className="font-bold text-base text-gray-900">
+                {pace.toFixed(2)} min/km
+              </p>
             </div>
           </div>
         </div>
       </div>
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="block mb-1 font-medium">Pace</label>
-          <p className="text-sm text-right">{pace.toFixed(2)} min/km</p>
+
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-sm font-medium text-gray-700">
+          <label htmlFor="pace-slider">Target Pace</label>
+          <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+            {pace.toFixed(2)} min/km
+          </span>
         </div>
         <Slider
+          id="pace-slider"
           value={[pace]}
           onValueChange={(values) => setPace(values[0])}
           max={10}
           min={3}
           step={0.1}
-          className="w-full"
+          className="w-full pt-1"
         />
       </div>
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="block mb-1 font-medium">Pace Variability</label>
-          <p className="text-sm text-right">{paceVariability.toFixed(0)}%</p>
+
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-sm font-medium text-gray-700">
+          <label htmlFor="variability-slider">Pace Variability</label>
+          <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+            {paceVariability.toFixed(0)}%
+          </span>
         </div>
         <Slider
+          id="variability-slider"
           value={[paceVariability]}
           onValueChange={(values) => setPaceVariability(values[0])}
           max={50}
           min={0}
           step={1}
-          className="w-full"
+          className="w-full pt-1"
         />
       </div>
+
       <div>
-        <label className="block mb-1 font-medium">Run Name</label>
+        <label htmlFor="run-name-input" className="block text-xs font-medium text-gray-700 mb-1">
+          Run Name
+        </label>
         <input
+          id="run-name-input"
           type="text"
           placeholder="Morning Run"
           value={runName}
           onChange={(e) => setRunName(e.target.value)}
-          className="border px-2 py-1 w-full rounded"
+          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all"
         />
       </div>
-      <div>
-        <label className="block mb-1 font-medium">Date</label>
-        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal border px-2 py-1 rounded"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(selectedDate) => {
-                setDate(selectedDate || new Date());
-                setIsCalendarOpen(false);
-              }}
-              autoFocus
-            />
-          </PopoverContent>
-        </Popover>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Date
+          </label>
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-left font-normal border-gray-200 px-3 py-1.5 h-auto text-xs rounded-lg hover:bg-gray-50"
+              >
+                <CalendarIcon className="mr-1.5 h-3.5 w-3.5 text-gray-400" />
+                {date ? format(date, "MMM dd, yyyy") : <span>Pick date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={(selectedDate) => {
+                  setDate(selectedDate || new Date());
+                  setIsCalendarOpen(false);
+                }}
+                autoFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
+          <label htmlFor="time-input" className="block text-xs font-medium text-gray-700 mb-1">
+            Start Time
+          </label>
+          <input
+            id="time-input"
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all"
+          />
+        </div>
       </div>
+
       <div>
-        <label className="block mb-1 font-medium">Time</label>
-        <input
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          className="border px-2 py-1 w-full rounded"
-        />
-      </div>
-      <div>
-        <label className="block mb-1 font-medium">Description</label>
+        <label htmlFor="description-input" className="block text-xs font-medium text-gray-700 mb-1">
+          Description (Optional)
+        </label>
         <textarea
-          className="border px-2 py-1 w-full rounded"
-          rows={3}
+          id="description-input"
+          rows={2}
           placeholder="Great morning run through the park..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500 transition-all resize-none"
         />
       </div>
-      <div>
+
+      <div className="pt-2">
         <button
-          className="w-full bg-red-500 text-white font-bold py-2 rounded hover:bg-red-600 hover:cursor-pointer"
+          disabled={!isRouteReady}
+          className={`w-full py-2.5 px-4 rounded-xl font-semibold text-sm transition-all shadow-sm ${
+            isRouteReady
+              ? "bg-red-500 hover:bg-red-600 text-white cursor-pointer hover:shadow"
+              : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+          }`}
           onClick={handleDownload}
         >
-          Download GPX file
+          {isRouteReady ? "Download GPX file" : "Plot Route to Download"}
         </button>
-        <p className="text-xs text-gray-600 text-center mt-2">
-          By clicking download you accept our{" "}
+        <p className="text-[11px] text-gray-500 text-center mt-2">
+          By downloading you accept our{" "}
           <button
+            type="button"
             onClick={() => setIsTermsOpen(true)}
-            className="text-red-500 underline hover:text-red-600 hover:cursor-pointer"
+            className="text-red-500 underline hover:text-red-600 cursor-pointer"
           >
-            T&C
+            Terms & Conditions
           </button>
         </p>
 

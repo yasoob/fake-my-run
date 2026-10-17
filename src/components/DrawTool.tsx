@@ -49,17 +49,17 @@ const DrawTool: React.FC<DrawToolProps> = ({
                   mode.id === "manual"
                     ? selectedMode === mode.id
                       ? "fill-red-500"
-                      : "fill-gray-300 group-hover:fill-red-300"
+                      : "fill-gray-400 group-hover:fill-red-400"
                     : selectedMode === mode.id
                     ? "stroke-red-500"
-                    : "stroke-gray-300 group-hover:stroke-red-300"
+                    : "stroke-gray-400 group-hover:stroke-red-400"
                 }`}
               />
               <span
                 className={`text-sm font-medium ${
                   selectedMode === mode.id
                     ? "text-red-500"
-                    : "text-gray-300 group-hover:text-red-300"
+                    : "text-gray-600 group-hover:text-red-500"
                 }`}
               >
                 {mode.label}

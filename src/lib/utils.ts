@@ -97,6 +97,24 @@ export function generateHeartCoordinates(
   return coordinates;
 }
 
+export function chunkCoordinates(
+  coords: [number, number][],
+  maxChunkSize: number = 25
+): [number, number][][] {
+  if (coords.length <= maxChunkSize) {
+    return [coords];
+  }
+  const chunks: [number, number][][] = [];
+  let i = 0;
+  while (i < coords.length - 1) {
+    const end = Math.min(i + maxChunkSize, coords.length);
+    chunks.push(coords.slice(i, end));
+    i = end - 1; // 1-point overlap to ensure contiguous road routing
+  }
+  return chunks;
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+

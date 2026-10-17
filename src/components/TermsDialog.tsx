@@ -133,8 +133,8 @@ const TermsDialog: React.FC<TermsDialogProps> = ({ open, onOpenChange }) => {
           <h3 className="font-semibold text-base">8. Governing Law</h3>
           <p>
             These Terms shall be governed by and construed in accordance with
-            the laws of [Insert Jurisdiction], without regard to its conflict of
-            law provisions.
+            applicable local laws and standard open-source software practices,
+            without regard to conflict of law provisions.
           </p>
 
           <div className="pt-4 border-t">

@@ -19,7 +19,6 @@ import keyIcon from "./assets/key.svg";
 import githubIcon from "./assets/github.svg";
 import TokenDialog from "./components/TokenDialog";
 import MapErrorBoundary from "./components/MapErrorBoundary";
-import TooManyPointsDialog from "./components/TooManyPointsDialog";
 import {
   haversineDistance,
   calculateVariablePace,
@@ -34,6 +33,7 @@ const INITIAL_CENTER: [number, number] = [-74.0242, 40.6941];
 const INITIAL_ZOOM = 13;
 const DEFAULT_ACCESS_TOKEN =
   "pk.eyJ1IjoieWFzb29iIiwiYSI6ImNtZHBtMGl3djBlZ2oyaW43ZDZ1MzE5M2YifQ.PLBwTXqAkzkX2EW5Kp67uw";
+const MAX_DIRECTIONS_COORDINATES = 25;
 
 // Centralized state interface
 interface AppState {
@@ -126,7 +126,6 @@ function App() {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
-  const [showTooManyPointsDialog, setShowTooManyPointsDialog] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState(() => {
     // Try to load from localStorage
@@ -338,25 +337,37 @@ function App() {
       // Add error handling for map events
       map.on("error", (e) => {
         console.error("Mapbox error:", e);
-        if (e.error?.message?.includes("Unauthorized")) {
+        const message = e.error?.message ?? "";
+        const status = (e.error as { status?: number } | undefined)?.status;
+        const isAuthError =
+          status === 401 ||
+          status === 403 ||
+          /unauthorized|invalid\s+(access\s+)?token|access token/i.test(
+            message
+          );
+
+        if (isAuthError) {
           setMapError(
             "Invalid access token. Please update your Mapbox access token."
           );
           setShowTokenDialog(true);
-        } else {
-          setMapError(
-            "Failed to load map resources. Please check your internet connection."
-          );
         }
+        // Other errors (e.g. one tile failing to load) are non-fatal and
+        // should not replace the whole map with an error message.
       });
 
       map.on("load", () => {
         try {
+          // Use the free AWS/Mapzen Terrarium elevation tiles instead of
+          // Mapbox's DEM tiles, which can return 429 for some tokens.
           map.addSource("mapbox-dem", {
             type: "raster-dem",
-            url: "mapbox://mapbox.terrain-rgb",
-            tileSize: 512,
-            maxzoom: 14,
+            tiles: [
+              "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+            ],
+            encoding: "terrarium",
+            tileSize: 256,
+            maxzoom: 15,
           });
           map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
         } catch (error) {
@@ -396,37 +407,54 @@ function App() {
       const targetCoords = coords || state.coordinates;
       if (!Array.isArray(targetCoords) || targetCoords.length < 2) return;
 
-      // Check if there are more than 25 points
-      if (targetCoords.length > 25) {
-        setShowTooManyPointsDialog(true);
-        return;
-      }
-
       trackEvent("align_path_to_road", { points: targetCoords.length });
-      const coordsStr = targetCoords.map((c) => `${c[0]},${c[1]}`).join(";");
-      const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsStr}?geometries=geojson&access_token=${accessToken}`;
 
       dispatch({ type: "SET_LOADING_ROUTE", payload: true });
       try {
-        const res = await fetch(url);
+        // Mapbox Directions accepts at most 25 coordinates per request,
+        // so split longer paths into overlapping batches and join the geometry.
+        const routeCoords: [number, number][] = [];
+        const batchStep = MAX_DIRECTIONS_COORDINATES - 1;
+        for (let i = 0; i < targetCoords.length; i += batchStep) {
+          const batch = targetCoords.slice(
+            i,
+            i + MAX_DIRECTIONS_COORDINATES
+          );
+          if (batch.length < 2) break;
 
-        if (!res.ok) {
-          if (res.status === 401) {
-            setMapError("Invalid access token for routing API.");
-            setShowTokenDialog(true);
-            return;
+          const coordsStr = batch.map((c) => `${c[0]},${c[1]}`).join(";");
+          const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${coordsStr}?geometries=geojson&access_token=${accessToken}`;
+
+          const res = await fetch(url);
+
+          if (!res.ok) {
+            if (res.status === 401) {
+              setMapError("Invalid access token for routing API.");
+              setShowTokenDialog(true);
+              return;
+            }
+            throw new Error(`Routing API error: ${res.status}`);
           }
-          throw new Error(`Routing API error: ${res.status}`);
+
+          const data = await res.json();
+
+          if (!data.routes || !data.routes[0] || !data.routes[0].geometry) {
+            throw new Error("Invalid route response from Mapbox API");
+          }
+
+          // Skip the first point of every batch after the first one, because
+          // batches overlap on their boundary coordinate.
+          const geometry = data.routes[0].geometry.coordinates as [
+            number,
+            number
+          ][];
+          routeCoords.push(
+            ...(routeCoords.length > 0 ? geometry.slice(1) : geometry)
+          );
+
+          if (batch.length < MAX_DIRECTIONS_COORDINATES) break;
         }
 
-        const data = await res.json();
-
-        if (!data.routes || !data.routes[0] || !data.routes[0].geometry) {
-          console.error("Invalid route response from Mapbox API");
-          return;
-        }
-
-        const routeCoords = data.routes[0].geometry.coordinates;
         const map = mapRef.current!;
 
         // Update elevations for new route
@@ -621,11 +649,6 @@ function App() {
         currentToken={accessToken}
         onClose={() => setShowTokenDialog(false)}
         onSave={handleSaveToken}
-      />
-
-      <TooManyPointsDialog
-        open={showTooManyPointsDialog}
-        onOpenChange={setShowTooManyPointsDialog}
       />
 
       <div className="grid grid-cols-12 min-h-screen">
